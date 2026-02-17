@@ -117,6 +117,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.widget import Widget
+from kivy.uix.scrollview import ScrollView
 from kivy.graphics import Color, Rectangle, Line
 from kivy.metrics import dp
 from kivy.properties import NumericProperty, BooleanProperty
@@ -231,14 +232,16 @@ class ScaleWidget(Widget):
         return super().on_touch_move(touch)
     
     def set_value_from_touch(self, touch):
-        scale_left = self.x + dp(50)
-        scale_width = self.width - dp(100)
-        
+        left_pad = dp(60)
+        right_pad = dp(60)
+        scale_left = self.x + left_pad
+        scale_width = self.width - (left_pad + right_pad)
+
         # Calculate value from touch position
         relative_x = touch.x - scale_left
         relative_x = max(0, min(scale_width, relative_x))
         raw_value = (relative_x / scale_width) * 100
-        
+
         # Snap to increments of 5
         self.value = round(raw_value / 5) * 5
         self.visited = True
@@ -371,7 +374,9 @@ class ScaleValueScreen(Screen):
         layout.add_widget(title)
         
         # Scrollable scale container
-        scale_container = BoxLayout(orientation='vertical', spacing=dp(10), size_hint_y=0.78)
+        scroll = ScrollView(size_hint_y=0.78)
+        scale_container = BoxLayout(orientation='vertical', spacing=dp(10), size_hint_y=None)
+        scale_container.bind(minimum_height=scale_container.setter('height'))
         
         for dim_name, desc in DIMENSIONS:
             # Dimension box
@@ -396,7 +401,8 @@ class ScaleValueScreen(Screen):
             
             scale_container.add_widget(dim_box)
         
-        layout.add_widget(scale_container)
+        scroll.add_widget(scale_container)
+        layout.add_widget(scroll)
         
         # Navigation
         nav_layout = BoxLayout(size_hint_y=0.14, spacing=dp(20), padding=[dp(10), dp(3)])
