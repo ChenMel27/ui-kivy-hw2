@@ -1,97 +1,58 @@
-# NASA TLX Workload Assessment Application
+# HW4 - RSVP Reader with Gesture & Keyboard Support
 
-## Overview
-This is a Kivy implementation of the NASA Task Load Index (TLX) workload assessment tool. The application guides users through a subjective workload assessment with pairwise factor comparisons and scale ratings.
+**Name:** Melanie Chen  
+**GT Email:**  mchen658@gatech.edu
+**GT Number:**  903901190
 
-## Requirements
-- Python 3.11.x
-- Kivy library
+## Keyboard Shortcuts
 
-## Installation
-```bash
-pip install kivy
-```
+| Key | Action |
+|-----|--------|
+| Left Arrow | Jump back 10 words |
+| Right Arrow | Jump forward 10 words |
+| Up Arrow | Speed up (+50 WPM) |
+| Down Arrow | Slow down (-50 WPM) |
+| + or = | Font bigger (+4) |
+| - | Font smaller (-4) |
+| Spacebar | Pause / Resume playback |
 
-## Running the Application
-```bash
-python3 main.py
-```
+## Gestures
 
-## Features
+All gestures are drawn on the RSVP display area (the dark central area where words are shown). A blue stroke is drawn as visual feedback while you draw.
 
-### Display/Device Independent Rendering
-- Uses kivy_config_helper for display density simulation support
-- All measurements use dp() for proper scaling across different display densities
-- Window resolution: 800x600
-- Window resizing is disabled
+| Gesture | Action |
+|---------|--------|
+| Swipe Left | Jump back 10 words |
+| Swipe Right | Jump forward 10 words |
+| Swipe Up | Speed up (+50 WPM) |
+| Swipe Down | Slow down (-50 WPM) |
+| Draw > (right-pointing chevron) | Font bigger (+4) |
+| Draw < (left-pointing chevron) | Font smaller (-4) |
+| Draw a Circle | Pause / Resume playback |
 
-### Application Flow
+### How to perform each gesture
 
-#### 1. Scale Weight Phase (Pairwise Comparisons)
-- Presents 15 randomized pairs of workload factors
-- Randomization includes both pair order and order within pairs
-- No default selection - user must choose one factor from each pair
-- Selection is visually highlighted in blue
-- Auto-advances to next screen upon selection
-- Next button is disabled until a selection is made
-- Previous button allows navigation back (except on first screen)
+- **Swipe**: Click and drag in the desired direction (left, right, up, or down) across the display area. The swipe must cover a minimum distance to register.
+- **Chevron Right (>)**: Start from the upper-left area, draw diagonally down-right to a midpoint, then draw diagonally up-right (forming a ">" shape). The middle of the stroke should bulge to the right of the start/end points.
+- **Chevron Left (<)**: Start from the upper-right area, draw diagonally down-left to a midpoint, then draw diagonally up-left (forming a "<" shape). The middle of the stroke should bulge to the left of the start/end points.
+- **Circle**: Draw a circular shape (clockwise or counter-clockwise) on the display area.
 
-#### 2. Scale Value Phase
-- Six custom-drawn scale widgets for rating each dimension (0-100)
-- Custom Canvas rendering with:
-  - Tick marks every 5 units
-  - Midpoint marked with taller line
-  - Colored bar showing current value
-  - Visual indication when scale has been visited (blue background and border)
-- Mouse interaction:
-  - Click to set value
-  - Click and drag for continuous adjustment
-  - Values snap to increments of 5
-- Zero is a valid selection
-- Next button disabled until all scales have been rated
+Press the **?** button in the toolbar to view a quick-reference overlay of all controls.
 
-#### 3. Results Screen
-- Displays for each dimension:
-  - Tally (count of times selected in comparisons)
-  - Weight (normalized tally value)
-  - Rating (0-100 scale value)
-- Calculates and displays Overall Workload Score
-- No navigation buttons (end of assessment)
+## What doesn't work / not completed
+- N/A
 
-### Design Elements
-- Clean, professional interface
-- Consistent color scheme (blue: #3380CC for selections)
-- Clear visual feedback for interactions
-- Proper spacing and alignment throughout
-- All screens preserve state when navigating
+## Implementation Notes
 
-## Implementation Details
+### Gesture Recognition
+Uses `kivy.gesture` with `GestureDatabase` for template matching. Two gesture templates are registered: a **circle** (for pause toggle) and a **chevron** (for font size changes). Swipe directions are detected by comparing start/end touch positions when no template matches. The `better_unistroke_normalizer` helper (from the assignment tips) interpolates touch points for reliable matching.
 
-### Key Classes
-- **ScaleWidget**: Custom widget with Canvas drawing for numerical scales
-- **PairComparisonScreen**: Screen for pairwise factor comparisons  
-- **ScaleValueScreen**: Screen for rating all six dimensions
-- **ResultsScreen**: Final screen displaying calculated results
-- **NASATLXApp**: Main application class managing screen flow
+### Focus Character Selection
+I picked the focus character based on how spritz does it which is slightly left of center (around a third) instead of dead at the center. For the shorter words (w 1-3 chars) I just use the first letter, for 4-5 char words I use index 1, and for longer words I pick roughly 1/3 of the way in.
 
-### Workload Factors
-1. Mental Demand
-2. Physical Demand
-3. Temporal Demand
-4. Performance (Failure → Perfect)
-5. Effort
-6. Frustration
+### Font Metrics
+I used `freetype-py` and `uharfbuzz` (from `kivy_text_metrics.py`) to get the actual ascender/descender vals from font so that the baseline line is correctly in position.
 
-### Calculations
-- Weight = Tally / Total number of comparisons (15)
-- Workload Score = Σ(Rating × Weight) for all dimensions
-
-## File Structure
-- main.py - Complete application code including kivy_config_helper
-- README.md - This file
-- kivy_config.ini - Auto-generated Kivy configuration file
-
-## Notes
-- Simulation mode is turned OFF in submitted code
-- Performance scale goes from "Failure" to "Perfect" (left to right) per GT research recommendations
-- Randomization occurs once per application run and is preserved when navigating between screens
+## Build Requirements
+- `freetype-py`
+- `uharfbuzz`
